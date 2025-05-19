@@ -1,7 +1,4 @@
 #%%
-import pandas as pd
-import numpy as np
-import os
 from supabase import create_client, Client
 import streamlit as st
 import streamlit.components.v1 as components
@@ -734,58 +731,58 @@ elif st.session_state.current_page == "Review":
         st.session_state.scroll_top = True
         st.rerun()
 
-if final_submit_button: 
-    response = supabase.table("Candidates").insert({
-        "First_Name" : st.session_state.first_name_input,
-        "Middle_Name" : st.session_state.middle_name_input,
-        "Last_Name" : st.session_state.last_name_input,
-        "Maiden_Name" : st.session_state.maiden_name_input,
-        "DOB" : str(st.session_state.dob_input),
-        "Religion" : st.session_state.religion_input,
-        "Mailing_Address" : st.session_state.mailing_address_input,
-        "App_Number" : st.session_state.app_number_input,
-        "Mailing_City" : st.session_state.city_input,
-        "Mailing_State" : st.session_state.state_input,
-        "Mailing_Country" : st.session_state.country_input,
-        "Phone_Day" : st.session_state.phone_day_input,
-        "Phone_Eve" : st.session_state.phone_eve_input,
-        "Phone_Other" : st.session_state.cell_phone_col,
-        "Email" : st.session_state.email_input,
-        "Notes" : st.session_state.other_input,
-        "Occupation" : st.session_state.occupation_input,
-        "Relationship_Type_One" : st.session_state.relationship_input_one,
-        "Relationship_Name_One" : st.session_state.name_input_one,
-        "Relationship_Age_One" : st.session_state.age_input_one,
-        "Relationship_Type_Two" : st.session_state.relationship_input_two,
-        "Relationship_Name_Two": st.session_state.name_input_two,
-        "Relationship_Age_Two" : st.session_state.age_input_two,
-        "Relationship_Type_Three" : st.session_state.relationship_input_three,
-        "Relationship_Name_Three" : st.session_state.name_input_three,
-        "Relationship_Age_Three" : st.session_state.age_input_three,
-        "Relationship_Type_Four" : st.session_state.relationship_input_four,
-        "Relationship_Name_Four" : st.session_state.name_input_four,
-        "Relationship_Age_Four" : st.session_state.age_input_four,
-        "Marriage_Status" : st.session_state.marriage_status,
-        "Baptism_Status" : st.session_state.baptism_status,
+    if final_submit_button: 
+        response = supabase.table("Candidates").insert({
+            "First_Name" : st.session_state.first_name_input,
+            "Middle_Name" : st.session_state.middle_name_input,
+            "Last_Name" : st.session_state.last_name_input,
+            "Maiden_Name" : st.session_state.maiden_name_input,
+            "DOB" : str(st.session_state.dob_input),
+            "Religion" : st.session_state.religion_input,
+            "Mailing_Address" : st.session_state.mailing_address_input,
+            "App_Number" : st.session_state.app_number_input,
+            "Mailing_City" : st.session_state.city_input,
+            "Mailing_State" : st.session_state.state_input,
+            "Mailing_Country" : st.session_state.country_input,
+            "Phone_Day" : st.session_state.phone_day_input,
+            "Phone_Eve" : st.session_state.phone_eve_input,
+            "Phone_Other" : st.session_state.cell_phone_col,
+            "Email" : st.session_state.email_input,
+            "Notes" : st.session_state.other_input,
+            "Occupation" : st.session_state.occupation_input,
+            "Relationship_Type_One" : st.session_state.relationship_input_one,
+            "Relationship_Name_One" : st.session_state.name_input_one,
+            "Relationship_Age_One" : st.session_state.age_input_one,
+            "Relationship_Type_Two" : st.session_state.relationship_input_two,
+            "Relationship_Name_Two": st.session_state.name_input_two,
+            "Relationship_Age_Two" : st.session_state.age_input_two,
+            "Relationship_Type_Three" : st.session_state.relationship_input_three,
+            "Relationship_Name_Three" : st.session_state.name_input_three,
+            "Relationship_Age_Three" : st.session_state.age_input_three,
+            "Relationship_Type_Four" : st.session_state.relationship_input_four,
+            "Relationship_Name_Four" : st.session_state.name_input_four,
+            "Relationship_Age_Four" : st.session_state.age_input_four,
+            "Marriage_Status" : st.session_state.marriage_status,
+            "Baptism_Status" : st.session_state.baptism_status,
 
-        "Fiance_Name" : st.session_state.fiance_name_input,
-        "Fiance_Religion" : st.session_state.fiance_religion_input,
-        "Fiance_My_Prev_Marriage_Status" : st.session_state.fiance_my_previous_marriage_status,
-        "Fiance_fiances_Prev_Marriage_Status" : st.session_state.fiance_fiances_previous_marriage_status,
+            "Fiance_Name" : st.session_state.fiance_name_input,
+            "Fiance_Religion" : st.session_state.fiance_religion_input,
+            "Fiance_My_Prev_Marriage_Status" : st.session_state.fiance_my_previous_marriage_status,
+            "Fiance_fiances_Prev_Marriage_Status" : st.session_state.fiance_fiances_previous_marriage_status,
 
-        "Spouse_Name" : st.session_state.spouse_name_input,
-        "Spouse_Religion" : st.session_state.spouse_religion_input,
-        "Spouse_My_Prev_Marriage_Status" : st.session_state.spouse_my_previous_marriage_status,
-        "Spouse_Spouse_Prev_Marriage_Status" : st.session_state.spouse_spouses_previous_marriage_status,
+            "Spouse_Name" : st.session_state.spouse_name_input,
+            "Spouse_Religion" : st.session_state.spouse_religion_input,
+            "Spouse_My_Prev_Marriage_Status" : st.session_state.spouse_my_previous_marriage_status,
+            "Spouse_Spouse_Prev_Marriage_Status" : st.session_state.spouse_spouses_previous_marriage_status,
 
-        "Baptised_Denomination" : st.session_state.baptised_denomination_input,
-        "Baptised_Age" : st.session_state.baptised_age_input,
-        "Baptised_Church_Name" : st.session_state.baptised_location_input,
-        "Baptised_Mailing_Address" : st.session_state.baptised_address_input,
-        "Baptised_Mailing_City" : st.session_state.baptised_city_input,
-        "Baptised_Mailing_State" : st.session_state.baptised_state_input,
-        "Baptised_Mailing_Country" : st.session_state.baptised_country_input,
-        "Sacraments_Penance" : st.session_state.sacraments_penance_input,
-        "Sacraments_Eucharist" : st.session_state.sacraments_eucharist_input,
-        "Sacraments_Confirmation" : st.session_state.sacraments_confirmation_input
-    }).execute()
+            "Baptised_Denomination" : st.session_state.baptised_denomination_input,
+            "Baptised_Age" : st.session_state.baptised_age_input,
+            "Baptised_Church_Name" : st.session_state.baptised_location_input,
+            "Baptised_Mailing_Address" : st.session_state.baptised_address_input,
+            "Baptised_Mailing_City" : st.session_state.baptised_city_input,
+            "Baptised_Mailing_State" : st.session_state.baptised_state_input,
+            "Baptised_Mailing_Country" : st.session_state.baptised_country_input,
+            "Sacraments_Penance" : st.session_state.sacraments_penance_input,
+            "Sacraments_Eucharist" : st.session_state.sacraments_eucharist_input,
+            "Sacraments_Confirmation" : st.session_state.sacraments_confirmation_input
+        }).execute()
