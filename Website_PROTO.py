@@ -8,6 +8,93 @@ url = "https://dptslvjsbhmxposqarwj.supabase.co"
 key = st.secrets["api"]["key"]
 supabase: Client = create_client(url, key)
 
+def former_spouse_form(prefix: str, title: str, annulment_options: list):
+    st.write(title)
+
+    # Name
+    first_col, middle_col, last_col = st.columns(3)
+    with first_col:
+        st.session_state[f"{prefix}_first_name_input"] = st.text_input("First", key=f"{prefix}_first")
+    with middle_col:
+        st.session_state[f"{prefix}_middle_name_input"] = st.text_input("Middle", key=f"{prefix}_middle")
+    with last_col:
+        st.session_state[f"{prefix}_last_name_input"] = st.text_input("Last", key=f"{prefix}_last")
+
+    # Date of Marriage
+    date_col_1, _, _ = st.columns(3)
+    with date_col_1:
+        default_date = st.session_state.get(f"{prefix}_date_of_marriage_input", datetime.date(2000, 1, 1))
+        st.session_state[f"{prefix}_date_of_marriage_input"] = st.date_input(
+            "Date of Marriage",
+            min_value=datetime.date(1800, 1, 1),
+            max_value=datetime.datetime.today(),
+            value=default_date,
+            key=f"{prefix}_marriage_date"
+        )
+
+    # Annulment radio
+    st.session_state[f"{prefix}_annulment_petition_status"] = st.radio(
+        'Was there ever a petitioned for an annulment from a Church Tribunal?',
+        annulment_options,
+        horizontal=True,
+        key=f"{prefix}_annulment_radio"
+    )
+    status_index = annulment_options.index(st.session_state[f"{prefix}_annulment_petition_status"])
+    st.session_state[f"{prefix}_annulment_petition_index"] = status_index
+
+    if status_index == 1:
+        # Annulment Case Details
+        case_col, date_col, _ = st.columns(3)
+        with case_col:
+            st.session_state[f"{prefix}_annulment_case_nbr_input"] = st.text_input("Annulment Case Number", key=f"{prefix}_case_num")
+        with date_col:
+            default_annulment_date = st.session_state.get(f"{prefix}_annulment_case_date_input", datetime.date(2000, 1, 1))
+            st.session_state[f"{prefix}_annulment_case_date_input"] = st.date_input(
+                "Date Granted",
+                min_value=datetime.date(1800, 1, 1),
+                max_value=datetime.datetime.today(),
+                value=default_annulment_date,
+                key=f"{prefix}_case_date"
+            )
+
+        # Diocese Info
+        city_col, state_col, country_col = st.columns(3)
+        with city_col:
+            st.session_state[f"{prefix}_annulment_diocese_city_input"] = st.text_input("Diocese/City", key=f"{prefix}_city")
+        with state_col:
+            st.session_state[f"{prefix}_annulment_diocese_state_input"] = st.text_input("State", key=f"{prefix}_state")
+        with country_col:
+            st.session_state[f"{prefix}_annulment_diocese_country_input"] = st.text_input("Country (if not USA)", key=f"{prefix}_country")
+
+        # Nullity Info
+        nullity_col, date_nullity_col = st.columns(2)
+        with nullity_col:
+            st.session_state[f"{prefix}_annulment_nullity_verification_input"] = st.text_input("Nullity Verification (if applicable)", key=f"{prefix}_nullity_verif")
+        with date_nullity_col:
+            default_nullity_date = st.session_state.get(f"{prefix}_annulment_nullity_date_input", datetime.date(2000, 1, 1))
+            st.session_state[f"{prefix}_annulment_nullity_date_input"] = st.date_input(
+                "Date of Verification",
+                min_value=datetime.date(1800, 1, 1),
+                max_value=datetime.datetime.today(),
+                value=default_nullity_date,
+                key=f"{prefix}_nullity_date"
+            )
+
+def family_member_input(family_current_count):
+    relationship_key = f"relationship_input_{family_current_count}"
+    name_key = f"name_input_{family_current_count}"
+    age_key = f"age_input_{family_current_count}"
+
+    indent  = " " * family_current_count
+
+    col1, col2, col3 = st.columns([2, 2, 1])
+
+    with col1:
+        st.session_state[relationship_key] = st.text_input(f"Relationship{indent}")
+    with col2:
+        st.session_state[name_key] = st.text_input(f"Name{indent}")
+    with col3:
+        st.session_state[age_key] = st.number_input(f"Age{indent}", min_value=0)
 
 marriage_options = ["Single", "Engaged", "Married", "Separated", "Divorced", "Widow(er)"]
 baptism_options = ["No", "Yes", "I am not sure"]
@@ -15,6 +102,9 @@ baptism_options = ["No", "Yes", "I am not sure"]
 previous_marriage_options = ["This is my first marriage", "I have been married before"]
 fiance_previous_marriage_options = ["This is my fiancé(e)’s first marriage", "My fiancé(e) has been married before"]
 spouse_previous_marriage_options = ["This is my spouse’s first marriage", "My spouse has been married before"]
+
+previous_marriage_annulment_options = ["Not, to my knowledge", "Yes", "An annulment is currently in process"]
+previous_marriage_annulment_status = ["No", "Yes", "I do not know"]
 
 # Centered title using HTML
 st.set_page_config(page_title="My First Website", layout='wide')
@@ -48,18 +138,19 @@ st.session_state.setdefault("cell_phone_col", None)
 st.session_state.setdefault("email_input", None)
 st.session_state.setdefault("other_input", None)
 st.session_state.setdefault("occupation_input", None)
-st.session_state.setdefault("relationship_input_one", None)
-st.session_state.setdefault("name_input_one", None)
-st.session_state.setdefault("age_input_one", None)
-st.session_state.setdefault("relationship_input_two", None)
-st.session_state.setdefault("name_input_two", None)
-st.session_state.setdefault("age_input_two", None)
-st.session_state.setdefault("relationship_input_three", None)
-st.session_state.setdefault("name_input_three", None)
-st.session_state.setdefault("age_input_three", None)
-st.session_state.setdefault("relationship_input_four", None)
-st.session_state.setdefault("name_input_four", None)
-st.session_state.setdefault("age_input_four", None)
+st.session_state.setdefault("current_relationship_count", 0)
+st.session_state.setdefault("relationship_input_1", None)
+st.session_state.setdefault("name_input_1", None)
+st.session_state.setdefault("age_input_1", None)
+st.session_state.setdefault("relationship_input_2", None)
+st.session_state.setdefault("name_input_2", None)
+st.session_state.setdefault("age_input_2", None)
+st.session_state.setdefault("relationship_input_3", None)
+st.session_state.setdefault("name_input_3", None)
+st.session_state.setdefault("age_input_3", None)
+st.session_state.setdefault("relationship_input_4", None)
+st.session_state.setdefault("name_input_4", None)
+st.session_state.setdefault("age_input4", None)
 st.session_state.setdefault("marriage_status", None)
 st.session_state.setdefault("marriage_status_index",0)
 st.session_state.setdefault("baptism_status", None)
@@ -68,11 +159,14 @@ st.session_state.setdefault("baptism_status_index",0)
 st.session_state.setdefault("fiance_name_input", None)
 st.session_state.setdefault("fiance_religion_input", None)
 st.session_state.setdefault("fiance_my_previous_marriage_status")
-st.session_state.setdefault("fiance_my_previous_marriage_index")
+st.session_state.setdefault("fiance_my_previous_marriage_index", 0)
 st.session_state.setdefault("fiance_fiances_previous_marriage_status")
-st.session_state.setdefault("fiance_fiances_previous_marriage_index")
+st.session_state.setdefault("fiance_fiances_previous_marriage_index", 0)
 
 st.session_state.setdefault("spouse_name_input")
+st.session_state.setdefault("spouse_baptised_catholic_input")
+st.session_state.setdefault("spouse_witnessed_by_ordination_input")
+st.session_state.setdefault("spouse_dispensation_for_ordination_input")
 st.session_state.setdefault("spouse_religion_input")
 st.session_state.setdefault("spouse_my_previous_marriage_status")
 st.session_state.setdefault("spouse_my_previous_marriage_index", 0)
@@ -90,6 +184,98 @@ st.session_state.setdefault("sacraments_penance_input")
 st.session_state.setdefault("sacraments_eucharist_input")
 st.session_state.setdefault("sacraments_confirmation_input")
 
+st.session_state.setdefault("my_first_former_spouse_first_name_input")
+st.session_state.setdefault("my_first_former_spouse_middle_name_input")
+st.session_state.setdefault("my_first_former_spouse_last_name_input")
+st.session_state.setdefault("my_first_former_spouse_date_of_marriage_input", None)
+st.session_state.setdefault("my_first_former_spouse_annulment_input")
+st.session_state.setdefault("my_first_former_spouse_annulment_petition_status")
+st.session_state.setdefault("my_first_former_spouse_annulment_petition_index", 0)
+st.session_state.setdefault("my_first_former_spouse_annulment_case_nbr_input")
+st.session_state.setdefault("my_first_former_spouse_annulment_case_date_input", None)
+st.session_state.setdefault("my_first_former_spouse_annulment_diocese_city_input")
+st.session_state.setdefault("my_first_former_spouse_annulment_diocese_state_input")
+st.session_state.setdefault("my_first_former_spouse_annulment_diocese_country_input")
+st.session_state.setdefault("my_first_former_spouse_annulment_nullity_verification_input")
+st.session_state.setdefault("my_first_former_spouse_annulment_nullity_date_input", None)
+st.session_state.setdefault("my_first_former_spouse_annulment_additional_marriage_boolean", False)
+st.session_state.setdefault("my_second_former_spouse_first_name_input")
+st.session_state.setdefault("my_second_former_spouse_middle_name_input")
+st.session_state.setdefault("my_second_former_spouse_last_name_input")
+st.session_state.setdefault("my_second_former_spouse_date_of_marriage_input", None)
+st.session_state.setdefault("my_second_former_spouse_annulment_input")
+st.session_state.setdefault("my_second_former_spouse_annulment_petition_status")
+st.session_state.setdefault("my_second_former_spouse_annulment_petition_index", 0)
+st.session_state.setdefault("my_second_former_spouse_annulment_case_nbr_input")
+st.session_state.setdefault("my_second_former_spouse_annulment_case_date_input", None)
+st.session_state.setdefault("my_second_former_spouse_annulment_diocese_city_input")
+st.session_state.setdefault("my_second_former_spouse_annulment_diocese_state_input")
+st.session_state.setdefault("my_second_former_spouse_annulment_diocese_country_input")
+st.session_state.setdefault("my_second_former_spouse_annulment_nullity_verification_input")
+st.session_state.setdefault("my_second_former_spouse_annulment_nullity_date_input", None)
+st.session_state.setdefault("my_second_former_spouse_annulment_additional_marriage_boolean")
+st.session_state.setdefault("my_third_former_spouse_first_name_input")
+st.session_state.setdefault("my_third_former_spouse_middle_name_input")
+st.session_state.setdefault("my_third_former_spouse_last_name_input")
+st.session_state.setdefault("my_third_former_spouse_date_of_marriage_input", None)
+st.session_state.setdefault("my_third_former_spouse_annulment_input")
+st.session_state.setdefault("my_third_former_spouse_annulment_petition_status")
+st.session_state.setdefault("my_third_former_spouse_annulment_petition_index", 0)
+st.session_state.setdefault("my_third_former_spouse_annulment_case_nbr_input")
+st.session_state.setdefault("my_third_former_spouse_annulment_case_date_input", None)
+st.session_state.setdefault("my_third_former_spouse_annulment_diocese_city_input")
+st.session_state.setdefault("my_third_former_spouse_annulment_diocese_state_input")
+st.session_state.setdefault("my_third_former_spouse_annulment_diocese_country_input")
+st.session_state.setdefault("my_third_former_spouse_annulment_nullity_verification_input")
+st.session_state.setdefault("my_third_former_spouse_annulment_nullity_date_input", None)
+st.session_state.setdefault("my_third_former_spouse_annulment_additional_marriage_boolean", False)
+
+st.session_state.setdefault("so_first_former_spouse_first_name_input")
+st.session_state.setdefault("so_first_former_spouse_middle_name_input")
+st.session_state.setdefault("so_first_former_spouse_last_name_input")
+st.session_state.setdefault("so_first_former_spouse_date_of_marriage_input", None)
+st.session_state.setdefault("so_first_former_spouse_annulment_input")
+st.session_state.setdefault("so_first_former_spouse_annulment_petition_status")
+st.session_state.setdefault("so_first_former_spouse_annulment_petition_index", 0)
+st.session_state.setdefault("so_first_former_spouse_annulment_case_nbr_input")
+st.session_state.setdefault("so_first_former_spouse_annulment_case_date_input", None)
+st.session_state.setdefault("so_first_former_spouse_annulment_diocese_city_input")
+st.session_state.setdefault("so_first_former_spouse_annulment_diocese_state_input")
+st.session_state.setdefault("so_first_former_spouse_annulment_diocese_country_input")
+st.session_state.setdefault("so_first_former_spouse_annulment_nullity_verification_input")
+st.session_state.setdefault("so_first_former_spouse_annulment_nullity_date_input", None)
+st.session_state.setdefault("so_first_former_spouse_annulment_additional_marriage_boolean", False)
+st.session_state.setdefault("so_second_former_spouse_first_name_input")
+st.session_state.setdefault("so_second_former_spouse_middle_name_input")
+st.session_state.setdefault("so_second_former_spouse_last_name_input")
+st.session_state.setdefault("so_second_former_spouse_date_of_marriage_input", None)
+st.session_state.setdefault("so_second_former_spouse_annulment_input")
+st.session_state.setdefault("so_second_former_spouse_annulment_petition_status")
+st.session_state.setdefault("so_second_former_spouse_annulment_petition_index", 0)
+st.session_state.setdefault("so_second_former_spouse_annulment_case_nbr_input")
+st.session_state.setdefault("so_second_former_spouse_annulment_case_date_input", None)
+st.session_state.setdefault("so_second_former_spouse_annulment_diocese_city_input")
+st.session_state.setdefault("so_second_former_spouse_annulment_diocese_state_input")
+st.session_state.setdefault("so_second_former_spouse_annulment_diocese_country_input")
+st.session_state.setdefault("so_second_former_spouse_annulment_nullity_verification_input")
+st.session_state.setdefault("so_second_former_spouse_annulment_nullity_date_input", None)
+st.session_state.setdefault("so_second_former_spouse_annulment_additional_marriage_boolean")
+st.session_state.setdefault("so_third_former_spouse_first_name_input")
+st.session_state.setdefault("so_third_former_spouse_middle_name_input")
+st.session_state.setdefault("so_third_former_spouse_last_name_input")
+st.session_state.setdefault("so_third_former_spouse_date_of_marriage_input", None)
+st.session_state.setdefault("so_third_former_spouse_annulment_input")
+st.session_state.setdefault("so_third_former_spouse_annulment_petition_status")
+st.session_state.setdefault("so_third_former_spouse_annulment_petition_index", 0)
+st.session_state.setdefault("so_third_former_spouse_annulment_case_nbr_input")
+st.session_state.setdefault("so_third_former_spouse_annulment_case_date_input", None)
+st.session_state.setdefault("so_third_former_spouse_annulment_diocese_city_input")
+st.session_state.setdefault("so_third_former_spouse_annulment_diocese_state_input")
+st.session_state.setdefault("so_third_former_spouse_annulment_diocese_country_input")
+st.session_state.setdefault("so_third_former_spouse_annulment_nullity_verification_input")
+st.session_state.setdefault("so_third_former_spouse_annulment_nullity_date_input", None)
+st.session_state.setdefault("so_third_former_spouse_annulment_additional_marriage_boolean", False)
+
 # Custom font for the centered title
 st.markdown(
     """
@@ -103,369 +289,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 if st.session_state.current_page == "Home":
-    with st.container():
-        with st.form("personal_info_form"):
-            ##########################
-            #--Personal Information--#
-            ##########################
-            st.markdown(
-                """
-                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                    I. Personal Information
-                </h1>
-                """,
-                unsafe_allow_html=True
-            )
-
-            selected_date = st.date_input("Select today's date", value=None)
-            
-            first_name_col, middle_name_col, last_name_col = st.columns(3)
-            with first_name_col:
-                st.session_state.first_name_input = st.text_input("Fist Name:", st.session_state.first_name_input)
-            with middle_name_col:
-                st.session_state.middle_name_input = st.text_input("Middle Name:", st.session_state.middle_name_input)
-            with last_name_col:
-                st.session_state.last_name_input = st.text_input("Last Name:", st.session_state.last_name_input)
-
-            maiden_name_col, dob_col, empty_col = st.columns(3)
-            with maiden_name_col:
-                st.session_state.maiden_name_input = st.text_input("Maiden Name (if applicable):", st.session_state.maiden_name_input)
-            with dob_col:
-                st.session_state.dob_input = st.date_input("Date of Birth", min_value=datetime.date(1800, 1, 1), max_value=datetime.datetime.today(), value = st.session_state.dob_input)
-            with empty_col:
-                st.empty()
-
-            religion_col, first_empty_col, second_empty_col = st.columns(3)
-            with religion_col:
-                st.session_state.religion_input = st.text_input("Current Religion (if any)", st.session_state.religion_input)
-            with first_empty_col:
-                st.empty()
-            with second_empty_col:
-                st.empty()
-
-            ##################
-            #--Contact Info--#
-            ##################
-            st.markdown(
-            """
-            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                II. Contact Information
-            </h1>
-            """,
-            unsafe_allow_html=True
-            )
-
-            mailing_address_col, apt_col = st.columns([2, 1])
-
-            with mailing_address_col:
-                st.session_state.mailing_address_input = st.text_input("Mailing Address", st.session_state.mailing_address_input)
-
-            with apt_col:
-                st.session_state.app_number_input = st.text_input("App Number", st.session_state.app_number_input)
-
-            city_col, state_col, country_col = st.columns(3)
-            with city_col:
-                st.session_state.city_input = st.text_input("City", st.session_state.city_input)
-            with state_col:
-                st.session_state.state_input = st.text_input("State", st.session_state.state_input)
-            with country_col:
-                st.session_state.country_input = st.text_input("Country (If not USA)", st.session_state.country_input)
-
-            phone_day_col, phone_eve_col, cell_phone_col = st.columns(3)
-            with phone_day_col:
-                st.session_state.phone_day_input = st.text_input("Phone (Daytime)", st.session_state.phone_day_input)
-            with phone_eve_col:
-                st.session_state.phone_eve_input = st.text_input("(Evening/Weekend)", st.session_state.phone_eve_input)
-            with cell_phone_col:
-                st.session_state.cell_phone_col = st.text_input("Cell Phone", st.session_state.cell_phone_col)
-
-            email_col, other_col = st.columns(2)
-            with email_col:
-                st.session_state.email_input = st.text_input("E-mail (Home)", st.session_state.email_input)
-            with other_col:
-                st.session_state.other_input = st.text_input("(Other)", st.session_state.other_input)
-
-            occupation_col, first_empty_col, second_empty_col = st.columns(3)
-            with occupation_col:
-                st.session_state.occupation_input = st.text_input("Occupation", st.session_state.occupation_input)
-            with first_empty_col:
-                st.empty()
-            with second_empty_col:
-                st.empty()
-        
-            ############################
-            #--Family Information--#
-            ############################
-            st.markdown(
-                """
-                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px; margin-bottom: 0;'>
-                    III. Family Information
-                </h1>
-                <h2 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 18px; font-style: italic; margin-top: 0;'>
-                    List the name(s) of any children or other dependents. (e.g. Daughter—Jane; Stepson—John.)
-                </h2>
-                """,
-                unsafe_allow_html=True
-            )
-
-            relationship_col_one, family_name_col_one, family_age_col_one = st.columns([2, 2, 1])
-            with relationship_col_one:
-                st.session_state.relationship_input_one = st.text_input("Relationship", st.session_state.relationship_input_one)
-            with family_name_col_one:
-                st.session_state.name_input_one = st.text_input("Name", st.session_state.name_input_one)
-            with family_age_col_one:
-                st.session_state.age_input_one = st.number_input("Age", min_value=0, value=st.session_state.age_input_one)
-
-            relationship_col, family_name_col, family_age_col = st.columns([2, 2, 1])
-            with relationship_col:
-                st.session_state.relationship_input_two = st.text_input("Relationship ", st.session_state.relationship_input_two)
-            with family_name_col:
-                st.session_state.name_input_two = st.text_input("Name ", st.session_state.name_input_two)
-            with family_age_col:
-                st.session_state.age_input_two = st.number_input("Age ", min_value=0, value = st.session_state.age_input_two)
-
-            relationship_col, family_name_col, family_age_col = st.columns([2, 2, 1])
-            with relationship_col:
-                st.session_state.relationship_input_three = st.text_input("Relationship  ", st.session_state.relationship_input_three)
-            with family_name_col:
-                st.session_state.name_input_three = st.text_input("Name  ", st.session_state.name_input_three)
-            with family_age_col:
-                st.session_state.age_input_three = st.number_input("Age  ", min_value=0, value=st.session_state.age_input_three)
-
-            relationship_col, family_name_col, family_age_col = st.columns([2, 2, 1])
-            with relationship_col:
-                st.session_state.relationship_input_four = st.text_input("Relationship   ", st.session_state.relationship_input_four)
-            with family_name_col:
-                st.session_state.name_input_four = st.text_input("Name   ", st.session_state.name_input_four)
-            with family_age_col:
-                st.session_state.age_input_four = st.number_input("Age   ", min_value=0, value=st.session_state.age_input_four)
-
-            ############################
-            #--Current Marital Status--#
-            ############################
-            st.markdown(
-            """
-            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                IV. Current Marital Status
-            </h1>
-            """,
-            unsafe_allow_html=True
-            )
-
-            st.session_state.marriage_status = st.radio("Marital Status", marriage_options, horizontal=True, index = st.session_state.marriage_status_index)
-            st.session_state.marriage_status_index = marriage_options.index(st.session_state.marriage_status)
-
-            #######################
-            #--Religious History--#
-            #######################
-            st.markdown(
-            """
-            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                V. Religious History
-            </h1>
-            """,
-            unsafe_allow_html=True
-            )
-
-            st.session_state.baptism_status = st.radio("Have you ever been baptised?", baptism_options, horizontal=True, index = st.session_state.baptism_status_index)
-            st.session_state.baptism_status_index = baptism_options.index(st.session_state.baptism_status)
-
-
-            # Every form needs a submit button
-            submitted = st.form_submit_button("Next")
-
-        # Display results after submission
-        if submitted:
-            missing_fields = []
-
-            if not selected_date:
-                missing_fields.append("Select a date")
-            if not st.session_state.first_name_input:
-                missing_fields.append("First Name")
-            if not st.session_state.last_name_input:
-                missing_fields.append("Last Name")
-            if not st.session_state.dob_input:
-                missing_fields.append("Date of Birth")
-            if not st.session_state.mailing_address_input:
-                missing_fields.append("Mailing Address")
-            if not st.session_state.city_input:
-                missing_fields.append("City")
-            if not st.session_state.state_input:
-                missing_fields.append("State")
-            if not st.session_state.email_input:
-                missing_fields.append("E-Mail Address")
-            if not st.session_state.phone_day_input and not st.session_state.phone_eve_input and not st.session_state.cell_phone_col:
-                missing_fields.append("Phone Number")
-            if not st.session_state.email_input:
-                missing_fields.append("Email Address")
-        
-            if missing_fields:
-                st.write("Missing fields:")
-                for field in missing_fields:
-                    st.write(f"• {field}")
-            else:
-                if st.session_state.marriage_status in ["Engaged", "Married"] or st.session_state.baptism_status == "Yes":
-                    st.session_state.scroll_top = True
-                    st.session_state.current_page = 'Additional Information'
-                    st.rerun()
-
-elif st.session_state.current_page == "Additional Information":
-    with st.form("Engagement_Form"):
-        if st.session_state.marriage_status == "Engaged":
-            #####################
-            #--Engagement Info--#
-            #####################
-            st.markdown(
-            """
-            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                Fiancé(e) Information
-            </h1>
-            """,
-            unsafe_allow_html=True
-            )
-            fiance_name_col, fiance_empty_one, fiance_empty_two = st.columns(3)
-            with fiance_name_col:
-                st.session_state.fiance_name_input = st.text_input("Fiancé(e)’s Name")
-            with fiance_empty_one:
-                st.empty()
-            with fiance_empty_two:
-                st.empty()
-            
-            fiance_religion_col, fiance_religion_empty_one, fiance_religion_empty_two = st.columns(3)
-            with fiance_religion_col:
-                st.session_state.fiance_religion_input = st.text_input("Your Fiancé(e)’s Current Religious Affiliation (if any)")
-            with fiance_religion_empty_one:
-                st.empty()
-            with fiance_religion_empty_two:
-                st.empty()
-
-            st.session_state.fiance_my_previous_marriage_status = st.radio("Have YOU ever been married before?", previous_marriage_options, horizontal=True)
-            st.session_state.fiance_my_previous_marriage_index = previous_marriage_options.index(st.session_state.fiance_my_previous_marriage_status)
-
-            st.session_state.fiance_fiances_previous_marriage_status = st.radio("Has your FIANCÉ(E) ever been married before?", fiance_previous_marriage_options, horizontal=True)
-            st.session_state.fiance_fiances_previous_marriage_index = fiance_previous_marriage_options.index(st.session_state.fiance_fiances_previous_marriage_status)
-
-        if st.session_state.marriage_status == "Married":
-            ##################
-            #--Married Info--#
-            ##################
-            st.markdown(
-            """
-            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                Married Information
-            </h1>
-            """,
-            unsafe_allow_html=True
-            )
-
-            spouse_name_col, spouse_empty_one, spouse_empty_two = st.columns(3)
-            with spouse_name_col:
-                st.session_state.spouse_name_input = st.text_input("Your Spouse’s Name")
-            with spouse_empty_one:
-                st.empty()
-            with spouse_empty_two:
-                st.empty()
-
-            spouse_religion_col, spouse_religion_empty_one, spouse_religion_empty_two = st.columns(3)
-            with spouse_religion_col:
-                st.session_state.spouse_religion_input = st.text_input("Your Spouse’s Current Religious Affiliation (if any)")
-            with spouse_religion_empty_one:
-                st.empty()
-            with spouse_religion_empty_two:
-                st.empty()
-
-            st.session_state.spouse_my_previous_marriage_status = st.radio("Have YOU ever been married before?", previous_marriage_options, horizontal=True)
-            st.session_state.spouse_my_previous_marriage_index = previous_marriage_options.index(st.session_state.spouse_my_previous_marriage_status)
-
-            st.session_state.spouse_spouses_previous_marriage_status = st.radio("Has your SPOUSE ever been married before?", spouse_previous_marriage_options, horizontal=True)
-            st.session_state.spouse_spouses_previous_marriage_index = spouse_previous_marriage_options.index(st.session_state.spouse_spouses_previous_marriage_status)
-
-        ##################
-        #--Baptism Info--#
-        ##################
-        if st.session_state.baptism_status == "Yes":
-            st.markdown(
-            """
-            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                Baptism Information
-            </h1>
-            """,
-            unsafe_allow_html=True
-            )
-                    
-            baptised_denomination_col, baptised_age_col, baptised_empty_one = st.columns(3)
-            with baptised_denomination_col:
-                st.session_state.baptised_denomination_input = st.text_input("In what denomination were you baptized?")
-            with baptised_age_col:
-                st.session_state.baptised_age_input = st.number_input("Approximate age when you were baptized:", min_value=0)
-            with baptised_empty_one:
-                st.empty()
-
-            baptised_location_col, baptised_address_col = st.columns([1, 2])
-            with baptised_location_col:
-                st.session_state.baptised_location_input = st.text_input("Place of Baptism (Name of church)")
-            with baptised_address_col:
-                st.session_state.baptised_address_input = st.text_input("Mailing Address, if known")
-
-            baptised_city_col, baptised_state_col, baptised_country_col = st.columns(3)
-            with baptised_city_col:
-                st.session_state.baptised_city_input = st.text_input("City")
-            with baptised_state_col:
-                st.session_state.baptised_state_input = st.text_input("State")
-            with baptised_country_col:
-                st.session_state.baptised_country_input = st.text_input("Country (if not USA)")
-
-            st.write("If you were baptized as a Catholic, check those sacraments you have already received:")
-            sacraments_penance_col, sacraments_eucharist_col, sacraments_confirmation_col = st.columns(3)
-            with sacraments_penance_col:
-                st.session_state.sacraments_penance_input = st.checkbox("Penance (Confession)")
-            with sacraments_eucharist_col:
-                st.session_state.sacraments_eucharist_input = st.checkbox("Eucharist (First Communion)")
-            with sacraments_confirmation_col:
-                st.session_state.sacraments_confirmation_input = st.checkbox("Confirmation")
-
-        button_cols = st.columns(10)
-        with button_cols[0]:
-            review_form = st.form_submit_button("Next")
-        with button_cols[1]:
-            previous_form = st.form_submit_button("Home")
-
-        if previous_form:
-            st.session_state.current_page = 'Home'
-            st.session_state.scroll_top = True
-            st.rerun()
-
-        if review_form:
-            missing_fields = []
-
-            if st.session_state.marriage_status == "Married":
-                if not st.session_state.spouse_name_input:                    
-                    missing_fields.append("Enter Spouse's Name")
-
-            if st.session_state.marriage_status == "Engaged":
-                if not st.session_state.fiance_name_input:                    
-                    missing_fields.append("Enter Spouse's Name")
-
-            if st.session_state.baptism_status == "Yes":
-                if not st.session_state.baptised_denomination_input:
-                    missing_fields.append("Please Enter Baptism Denomination")
-                if not st.session_state.baptised_age_input:
-                    missing_fields.append("Please enter approximate age of baptism")
-                if not st.session_state.baptised_location_input:
-                    missing_fields.append("Please enter church name of baptism")
-                if not st.session_state.baptised_city_input:
-                    missing_fields.append("Please enter church state of baptism")
-
-            if missing_fields:
-                st.write("Missing fields:")
-                for field in missing_fields:
-                    st.write(f"• {field}")
-            else:                    
-                st.session_state.current_page = 'Review'
-                st.session_state.scroll_top = True
-                st.rerun()
-
-elif st.session_state.current_page == "Review":
+    ##########################
+    #--Personal Information--#
+    ##########################
     st.markdown(
         """
         <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
@@ -474,25 +300,30 @@ elif st.session_state.current_page == "Review":
         """,
         unsafe_allow_html=True
     )
+
+    date_col = st.columns(5)
+    with date_col[0]:
+        selected_date = st.write(f'Date: {datetime.datetime.now().strftime("%B %d, %Y")}')
+    
     first_name_col, middle_name_col, last_name_col = st.columns(3)
     with first_name_col:
-        st.text_input("Fist Name:", st.session_state.first_name_input, disabled=True)
+        st.session_state.first_name_input = st.text_input("Fist Name:", st.session_state.first_name_input)
     with middle_name_col:
-        st.text_input("Middle Name:", st.session_state.middle_name_input, disabled=True)
+        st.session_state.middle_name_input = st.text_input("Middle Name", st.session_state.middle_name_input)
     with last_name_col:
-        st.text_input("Last Name:", st.session_state.last_name_input, disabled=True)
+        st.session_state.last_name_input = st.text_input("Last Name:", st.session_state.last_name_input)
 
     maiden_name_col, dob_col, empty_col = st.columns(3)
     with maiden_name_col:
-        st.text_input("Maiden Name (if applicable):", st.session_state.maiden_name_input, disabled=True)
+        st.session_state.maiden_name_input = st.text_input("Maiden Name (if applicable):", st.session_state.maiden_name_input)
     with dob_col:
-        st.date_input("Date of Birth", st.session_state.dob_input, disabled=True)
+        st.session_state.dob_input = st.date_input("Date of Birth", min_value=datetime.date(1800, 1, 1), max_value=datetime.datetime.today(), value = st.session_state.dob_input)
     with empty_col:
         st.empty()
 
     religion_col, first_empty_col, second_empty_col = st.columns(3)
     with religion_col:
-        st.text_input("Current Religion (if any)", st.session_state.religion_input, disabled=True)
+        st.session_state.religion_input = st.text_input("Current Religion (if any)", st.session_state.religion_input)
     with first_empty_col:
         st.empty()
     with second_empty_col:
@@ -513,36 +344,36 @@ elif st.session_state.current_page == "Review":
     mailing_address_col, apt_col = st.columns([2, 1])
 
     with mailing_address_col:
-        st.text_input("Mailing Address", st.session_state.mailing_address_input, disabled=True)
+        st.session_state.mailing_address_input = st.text_input("Mailing Address", st.session_state.mailing_address_input)
 
     with apt_col:
-        st.text_input("App Number", st.session_state.app_number_input, disabled=True)
+        st.session_state.app_number_input = st.text_input("App Number", st.session_state.app_number_input)
 
     city_col, state_col, country_col = st.columns(3)
     with city_col:
-        st.text_input("City", st.session_state.city_input, disabled=True)
+        st.session_state.city_input = st.text_input("City", st.session_state.city_input)
     with state_col:
-        st.text_input("State", st.session_state.state_input, disabled=True)
+        st.session_state.state_input = st.text_input("State", st.session_state.state_input)
     with country_col:
-        st.text_input("Country (If not USA)", st.session_state.country_input, disabled=True)
+        st.session_state.country_input = st.text_input("Country (If not USA)", st.session_state.country_input)
 
     phone_day_col, phone_eve_col, cell_phone_col = st.columns(3)
     with phone_day_col:
-        st.text_input("Phone (Daytime)", st.session_state.phone_day_input, disabled=True)
+        st.session_state.phone_day_input = st.text_input("Phone (Daytime)", st.session_state.phone_day_input)
     with phone_eve_col:
-        st.text_input("(Evening/Weekend)", st.session_state.phone_eve_input, disabled=True)
+        st.session_state.phone_eve_input = st.text_input("(Evening/Weekend)", st.session_state.phone_eve_input)
     with cell_phone_col:
-        st.text_input("Cell Phone", st.session_state.cell_phone_col, disabled=True)
+        st.session_state.cell_phone_col = st.text_input("Cell Phone", st.session_state.cell_phone_col)
 
     email_col, other_col = st.columns(2)
     with email_col:
-        st.text_input("E-mail (Home)", st.session_state.email_input, disabled=True)
+        st.session_state.email_input = st.text_input("E-mail (Home)", st.session_state.email_input)
     with other_col:
-        st.text_input("(Other)", st.session_state.other_input, disabled=True)
+        st.session_state.other_input = st.text_input("(Other)", st.session_state.other_input)
 
     occupation_col, first_empty_col, second_empty_col = st.columns(3)
     with occupation_col:
-        st.text_input("Occupation", st.session_state.occupation_input, disabled=True)
+        st.session_state.occupation_input = st.text_input("Occupation", st.session_state.occupation_input)
     with first_empty_col:
         st.empty()
     with second_empty_col:
@@ -563,81 +394,97 @@ elif st.session_state.current_page == "Review":
         unsafe_allow_html=True
     )
 
-    relationship_col_one, family_name_col_one, family_age_col_one = st.columns([2, 2, 1])
-    with relationship_col_one:
-        st.text_input("Relationship", st.session_state.relationship_input_one, disabled=True)
-    with family_name_col_one:
-        st.text_input("Name", st.session_state.name_input_one, disabled=True)
-    with family_age_col_one:
-        st.number_input("Age", st.session_state.age_input_one, disabled=True)
+    if(st.session_state.current_relationship_count > 0 and st.session_state.current_relationship_count < 5):
+        for x in range(1, st.session_state.current_relationship_count + 1):
+            family_member_input(x)
+    
+    if st.session_state.current_relationship_count < 4:
+        if st.button("Add Family Member") and st.session_state.current_relationship_count < 4:
+            st.session_state.current_relationship_count += 1
+            st.rerun()
+    
+    if st.session_state.current_relationship_count > 0:
+        if st.button("Remove Family Member") and st.session_state.current_relationship_count > 0:
+            st.session_state.current_relationship_count -= 1
+            st.rerun()
 
-    relationship_col, family_name_col, family_age_col = st.columns([2, 2, 1])
-    with relationship_col:
-        st.text_input("Relationship ", st.session_state.relationship_input_two, disabled=True)
-    with family_name_col:
-        st.text_input("Name ", st.session_state.name_input_two, disabled=True)
-    with family_age_col:
-        st.number_input("Age ", st.session_state.age_input_two, disabled=True)
+    ############################
+    #--Current Marital Status--#
+    ############################
+    st.markdown(
+    """
+    <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
+        IV. Current Marital Status
+    </h1>
+    """,
+    unsafe_allow_html=True
+    )
 
-    relationship_col, family_name_col, family_age_col = st.columns([2, 2, 1])
-    with relationship_col:
-        st.text_input("Relationship  ", st.session_state.relationship_input_three, disabled=True)
-    with family_name_col:
-        st.text_input("Name  ", st.session_state.name_input_three, disabled=True)
-    with family_age_col:
-        st.number_input("Age  ", st.session_state.age_input_three, disabled=True)
-
-    relationship_col, family_name_col, family_age_col = st.columns([2, 2, 1])
-    with relationship_col:
-        st.text_input("Relationship   ", st.session_state.relationship_input_four, disabled=True)
-    with family_name_col:
-        st.text_input("Name   ", st.session_state.name_input_four, disabled=True)
-    with family_age_col:
-        st.number_input("Age   ", st.session_state.age_input_four, disabled=True)
-
-    st.radio("Marital Status", marriage_options, horizontal=True, index=st.session_state.marriage_status_index, disabled=True)
-    st.radio("Have you ever been baptised?", baptism_options, horizontal=True, index=st.session_state.baptism_status_index, disabled=True)
-
-    #####################
-    #--Engagement Info--#
-    #####################
-    if st.session_state.marriage_status == "Engaged":
-            st.markdown(
+    st.markdown(
             """
-            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-                Fiancé(e) Information
+            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px; margin-bottom: -100px;'>
+                Marital Status
             </h1>
             """,
             unsafe_allow_html=True
             )
-            fiance_name_col, fiance_empty_one, fiance_empty_two = st.columns(3)
-            with fiance_name_col:
-                st.text_input("Fiancé(e)’s Name", value = st.session_state.fiance_name_input)
-            with fiance_empty_one:
-                st.empty()
-            with fiance_empty_two:
-                st.empty()
-            
-            fiance_religion_col, fiance_religion_empty_one, fiance_religion_empty_two = st.columns(3)
-            with fiance_religion_col:
-                st.text_input("Your Fiancé(e)’s Current Religious Affiliation (if any)", value = st.session_state.fiance_religion_input)
-            with fiance_religion_empty_one:
-                st.empty()
-            with fiance_religion_empty_two:
-                st.empty()
+    st.session_state.marriage_status = st.radio("", marriage_options, horizontal=True)
+    st.session_state.marriage_status_index = marriage_options.index(st.session_state.marriage_status)
 
-            st.radio("Have YOU ever been married before?", previous_marriage_options, horizontal=True, index = st.session_state.fiance_my_previous_marriage_index, disabled=True)
-
-            st.radio("Has your FIANCÉ(E) ever been married before?", fiance_previous_marriage_options, horizontal=True, index = st.session_state.fiance_fiances_previous_marriage_index, disabled=True)
-
-    ##################
-    #--Married Info--#
-    ##################
     if st.session_state.marriage_status == "Married":
+        ##################
+        #--Married Info--#
+        ##################
+        st.markdown("""
+            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px; margin-bottom: -100px;'>
+                Have YOU ever been married before?
+            </h1>
+        """, unsafe_allow_html=True)
+
+        st.session_state.spouse_my_previous_marriage_status = st.radio("", previous_marriage_options, horizontal=True)
+        st.session_state.spouse_my_previous_marriage_index = previous_marriage_options.index(st.session_state.spouse_my_previous_marriage_status)
+
+        if st.session_state.marriage_status in ["Engaged", "Married"] and (st.session_state.spouse_my_previous_marriage_status == "I have been married before" or st.session_state.spouse_my_previous_marriage_status == "I have been married before"):
+            st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px;'>
+                    My Previous Marriage Information
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
+            
+            # First spouse
+            former_spouse_form("my_first_former_spouse", "Former Spouse’s Current Name:", previous_marriage_annulment_options)
+
+            if not st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean:
+                if st.button("Add Another Former Spouse"):
+                    st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean = True
+                    st.rerun()
+
+            if st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean:
+                # Second spouse
+                former_spouse_form("my_second_former_spouse", "Second Former Spouse’s Current Name:", previous_marriage_annulment_options)
+
+                if not  st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean:
+                    if st.button("Remove previous spouse"):
+                        st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean = False
+                        st.rerun()
+                    if st.button("Add Another Former Spouse "):
+                        st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean = True
+                        st.rerun()
+
+            if st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean:
+                # Third spouse
+                former_spouse_form("my_third_former_spouse", "Third Former Spouse’s Current Name:", previous_marriage_annulment_options)
+                if st.button("Remove previous spouse "):
+                    st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean = False
+                    st.rerun()
+
         st.markdown(
         """
-        <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-            Married Information
+        <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px;'>
+            Spouse’s Information
         </h1>
         """,
         unsafe_allow_html=True
@@ -645,7 +492,7 @@ elif st.session_state.current_page == "Review":
 
         spouse_name_col, spouse_empty_one, spouse_empty_two = st.columns(3)
         with spouse_name_col:
-            st.text_input("Your Spouse’s Name", value = st.session_state.spouse_name_input, disabled=True)
+            st.session_state.spouse_name_input = st.text_input("Your Spouse’s Name")
         with spouse_empty_one:
             st.empty()
         with spouse_empty_two:
@@ -653,136 +500,406 @@ elif st.session_state.current_page == "Review":
 
         spouse_religion_col, spouse_religion_empty_one, spouse_religion_empty_two = st.columns(3)
         with spouse_religion_col:
-            st.text_input("Your Spouse’s Current Religious Affiliation (if any)", value=st.session_state.spouse_religion_input, disabled=True)
+            st.session_state.spouse_religion_input = st.text_input("Your Spouse’s Current Religious Affiliation (if any)")
         with spouse_religion_empty_one:
             st.empty()
         with spouse_religion_empty_two:
             st.empty()
 
-        st.radio("Have YOU ever been married before?", previous_marriage_options, horizontal=True, index = st.session_state.spouse_my_previous_marriage_index, disabled=True)
+        st.session_state.spouse_baptised_catholic_input = st.checkbox("My spouse baptized as a Catholic?")
 
-        st.radio("Has your SPOUSE ever been married before?", spouse_previous_marriage_options, horizontal=True, index = st.session_state.spouse_spouses_previous_marriage_index, disabled=True)
-    ##################
-    #--Baptism Info--#
-    ##################
-    if st.session_state.baptism_status == "Yes":
+        if st.session_state.spouse_baptised_catholic_input:
+            st.session_state.spouse_witnessed_by_ordination_input = st.radio("Our Marriage was witnessed by a Catholic priest or deacon?", ["Yes", "No"], horizontal=True)
+
+        if st.session_state.spouse_baptised_catholic_input and st.session_state.spouse_witnessed_by_ordination_input == "No":
+            st.session_state.spouse_dispensation_for_ordination_input = st.radio("Did you receive a dispensation for ordination?", ["Yes", "No"], horizontal=True)
+            
+
+    elif st.session_state.marriage_status == "Engaged":
+        #####################
+        #--Engagement Info--#
+        #####################
+        # Now render your heading and radio
+        st.markdown("""
+            <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px; margin-bottom: -100px;'>
+                Have YOU ever been married before?
+            </h1>
+        """, unsafe_allow_html=True)
+        st.session_state.fiance_my_previous_marriage_status = st.radio("", previous_marriage_options, horizontal=True)
+        st.session_state.fiance_my_previous_marriage_index = previous_marriage_options.index(st.session_state.fiance_my_previous_marriage_status)
+
+        if st.session_state.marriage_status in ["Engaged", "Married"] and (st.session_state.fiance_my_previous_marriage_status == "I have been married before" or st.session_state.fiance_my_previous_marriage_status == "I have been married before"):
+            st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px;'>
+                    My Previous Marriage Information
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
+            
+            # First spouse
+            former_spouse_form("my_first_former_spouse", "Former Spouse’s Current Name:", previous_marriage_annulment_options)
+
+            if not st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean:
+                if st.button("Add Another Former Spouse"):
+                    st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean = True
+                    st.rerun()
+
+            if st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean:
+                # Second spouse
+                former_spouse_form("my_second_former_spouse", "Second Former Spouse’s Current Name:", previous_marriage_annulment_options)
+
+                if not  st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean:
+                    if st.button("Remove previous spouse"):
+                        st.session_state.my_second_former_spouse_annulment_additional_marriage_boolean = False
+                        st.rerun()
+                    if st.button("Add Another Former Spouse "):
+                        st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean = True
+                        st.rerun()
+
+            if st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean:
+                # Third spouse
+                former_spouse_form("my_third_former_spouse", "Third Former Spouse’s Current Name:", previous_marriage_annulment_options)
+                if st.button("Remove previous spouse "):
+                    st.session_state.my_third_former_spouse_annulment_additional_marriage_boolean = False
+                    st.rerun()
+        
         st.markdown(
         """
-        <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
-            Baptism Information
+        <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px;'>
+            Fiancé(e) Information
         </h1>
         """,
         unsafe_allow_html=True
         )
-                
-        baptised_denomination_col, baptised_age_col, baptised_empty_one = st.columns(3)
-        with baptised_denomination_col:
-            st.text_input("In what denomination were you baptized?", value = st.session_state.baptised_denomination_input, disabled=True)
-        with baptised_age_col:
-            st.number_input("Approximate age when you were baptized:", value = st.session_state.baptised_age_input, disabled=True)
-        with baptised_empty_one:
+        fiance_name_col, fiance_empty_one, fiance_empty_two = st.columns(3)
+        with fiance_name_col:
+            st.session_state.fiance_name_input = st.text_input("Fiancé(e)’s Name")
+        with fiance_empty_one:
+            st.empty()
+        with fiance_empty_two:
+            st.empty()
+        
+        fiance_religion_col, fiance_religion_empty_one, fiance_religion_empty_two = st.columns(3)
+        with fiance_religion_col:
+            st.session_state.fiance_religion_input = st.text_input("Your Fiancé(e)’s Current Religious Affiliation (if any)")
+        with fiance_religion_empty_one:
+            st.empty()
+        with fiance_religion_empty_two:
             st.empty()
 
-        baptised_location_col, baptised_address_col = st.columns([1, 2])
-        with baptised_location_col:
-            st.text_input("Place of Baptism (Name of church)", value=st.session_state.baptised_location_input, disabled=True)
-        with baptised_address_col:
-            st.text_input("Mailing Address, if known", value=st.session_state.baptised_address_input, disabled=True)
+    if st.session_state.marriage_status == "Married":
+        st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px; margin-bottom: -100px;'>
+                    Has your SPOUSE ever been married before?
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
+        st.session_state.spouse_spouses_previous_marriage_status = st.radio("", spouse_previous_marriage_options, horizontal=True)
+        st.session_state.spouse_spouses_previous_marriage_index = spouse_previous_marriage_options.index(st.session_state.spouse_spouses_previous_marriage_status)
 
-        baptised_city_col, baptised_state_col, baptised_country_col = st.columns(3)
-        with baptised_city_col:
-            st.text_input("City ", value=st.session_state.baptised_city_input, disabled=True)
-        with baptised_state_col:
-            st.text_input("State ", value=st.session_state.baptised_state_input, disabled=True)
-        with baptised_country_col:
-            st.text_input("Country (if not USA) ", value=st.session_state.baptised_country_input, disabled=True)
+    elif st.session_state.marriage_status == "Engaged":
+        st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px; margin-bottom: -100px;'>
+                    Fiancé(e) Previous Marriage Information
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
+        st.session_state.fiance_fiances_previous_marriage_status = st.radio("", fiance_previous_marriage_options, horizontal=True)
+        st.session_state.fiance_fiances_previous_marriage_index = fiance_previous_marriage_options.index(st.session_state.fiance_fiances_previous_marriage_status)  
 
-        st.write("If you were baptized as a Catholic, check those sacraments you have already received:")
-        sacraments_penance_col, sacraments_eucharist_col, sacraments_confirmation_col = st.columns(3)
-        with sacraments_penance_col:
-            st.checkbox("Penance (Confession)", value=st.session_state.sacraments_penance_input, disabled=True)
-        with sacraments_eucharist_col:
-            st.checkbox("Eucharist (First Communion)", value=st.session_state.sacraments_eucharist_input, disabled=True)
-        with sacraments_confirmation_col:
-            st.checkbox("Confirmation", value=st.session_state.sacraments_confirmation_input, disabled=True)
+    if st.session_state.marriage_status in ["Engaged", "Married"] and (st.session_state.spouse_spouses_previous_marriage_status == "My spouse has been married before" or st.session_state.fiance_fiances_previous_marriage_status == "My fiancé(e) has been married before"):
+        if st.session_state.marriage_status == "Engaged": 
+            st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px;'>
+                    Fiancé(e) Previous Marriage Information
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
+        elif st.session_state.marriage_status == "Married":
+            st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
+                    Spouse Previous Marriage Information
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
 
-    if st.session_state.marriage_status in ["Engaged", "Married"] or st.session_state.baptism_status == "Yes":
-        button_cols = st.columns(10)
-        with button_cols[0]:
-            home_from_review_button = st.button("Home")
-        with button_cols[1]:
-            additional_information_from_review_button = st.button("Previous")
-        with button_cols[2]:
-            final_submit_button = st.button("Submit")
-    else:
-        button_cols = st.columns(10)
-        with button_cols[0]:
-            home_from_review_button = st.button("Home")
-        with button_cols[1]:
-            final_submit_button = st.button("Submit")
+        # First spouse
+        former_spouse_form("so_first_former_spouse", "Former Spouse’s Current Name:", previous_marriage_annulment_options)
 
-    if home_from_review_button:
-        st.session_state.current_page = 'Home'
-        st.session_state.scroll_top = True
-        st.rerun()
+        if not st.session_state.so_second_former_spouse_annulment_additional_marriage_boolean:
+            if st.button("Add Another Former Spouse  "):
+                st.session_state.so_second_former_spouse_annulment_additional_marriage_boolean = True
+                st.rerun()
 
-    if additional_information_from_review_button:
-        st.session_state.current_page = 'Additional Information'
-        st.session_state.scroll_top = True
-        st.rerun()
+        if st.session_state.so_second_former_spouse_annulment_additional_marriage_boolean:
+            # Second spouse
+            former_spouse_form("so_second_former_spouse", "Second Former Spouse’s Current Name:", previous_marriage_annulment_options)
 
-    if final_submit_button: 
-        response = supabase.table("Candidates").insert({
-            "First_Name" : st.session_state.first_name_input,
-            "Middle_Name" : st.session_state.middle_name_input,
-            "Last_Name" : st.session_state.last_name_input,
-            "Maiden_Name" : st.session_state.maiden_name_input,
-            "DOB" : str(st.session_state.dob_input),
-            "Religion" : st.session_state.religion_input,
-            "Mailing_Address" : st.session_state.mailing_address_input,
-            "App_Number" : st.session_state.app_number_input,
-            "Mailing_City" : st.session_state.city_input,
-            "Mailing_State" : st.session_state.state_input,
-            "Mailing_Country" : st.session_state.country_input,
-            "Phone_Day" : st.session_state.phone_day_input,
-            "Phone_Eve" : st.session_state.phone_eve_input,
-            "Phone_Other" : st.session_state.cell_phone_col,
-            "Email" : st.session_state.email_input,
-            "Notes" : st.session_state.other_input,
-            "Occupation" : st.session_state.occupation_input,
-            "Relationship_Type_One" : st.session_state.relationship_input_one,
-            "Relationship_Name_One" : st.session_state.name_input_one,
-            "Relationship_Age_One" : st.session_state.age_input_one,
-            "Relationship_Type_Two" : st.session_state.relationship_input_two,
-            "Relationship_Name_Two": st.session_state.name_input_two,
-            "Relationship_Age_Two" : st.session_state.age_input_two,
-            "Relationship_Type_Three" : st.session_state.relationship_input_three,
-            "Relationship_Name_Three" : st.session_state.name_input_three,
-            "Relationship_Age_Three" : st.session_state.age_input_three,
-            "Relationship_Type_Four" : st.session_state.relationship_input_four,
-            "Relationship_Name_Four" : st.session_state.name_input_four,
-            "Relationship_Age_Four" : st.session_state.age_input_four,
-            "Marriage_Status" : st.session_state.marriage_status,
-            "Baptism_Status" : st.session_state.baptism_status,
+            if not  st.session_state.so_third_former_spouse_annulment_additional_marriage_boolean:
+                if st.button("Remove previous spouse  "):
+                    st.session_state.so_second_former_spouse_annulment_additional_marriage_boolean = False
+                    st.rerun()
+                if st.button("Add Another Former Spouse   "):
+                    st.session_state.so_third_former_spouse_annulment_additional_marriage_boolean = True
+                    st.rerun()
 
-            "Fiance_Name" : st.session_state.fiance_name_input,
-            "Fiance_Religion" : st.session_state.fiance_religion_input,
-            "Fiance_My_Prev_Marriage_Status" : st.session_state.fiance_my_previous_marriage_status,
-            "Fiance_fiances_Prev_Marriage_Status" : st.session_state.fiance_fiances_previous_marriage_status,
+        if st.session_state.so_third_former_spouse_annulment_additional_marriage_boolean:
+            # Third spouse
+            former_spouse_form("so_third_former_spouse", "Third Former Spouse’s Current Name:", previous_marriage_annulment_options)
+            if st.button("Remove previous spouse    "):
+                st.session_state.so_third_former_spouse_annulment_additional_marriage_boolean = False
+                st.rerun()
+    #######################
+    #--Religious History--#
+    #######################
+    st.markdown(
+    """
+    <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
+        V. Religious History
+    </h1>
+    """,
+    unsafe_allow_html=True
+    )
 
-            "Spouse_Name" : st.session_state.spouse_name_input,
-            "Spouse_Religion" : st.session_state.spouse_religion_input,
-            "Spouse_My_Prev_Marriage_Status" : st.session_state.spouse_my_previous_marriage_status,
-            "Spouse_Spouse_Prev_Marriage_Status" : st.session_state.spouse_spouses_previous_marriage_status,
+    st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px; margin-bottom: -100px;'>
+                    Have you ever been baptised?
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
+    st.session_state.baptism_status = st.radio("", baptism_options, horizontal=True)
+    st.session_state.baptism_status_index = baptism_options.index(st.session_state.baptism_status)
 
-            "Baptised_Denomination" : st.session_state.baptised_denomination_input,
-            "Baptised_Age" : st.session_state.baptised_age_input,
-            "Baptised_Church_Name" : st.session_state.baptised_location_input,
-            "Baptised_Mailing_Address" : st.session_state.baptised_address_input,
-            "Baptised_Mailing_City" : st.session_state.baptised_city_input,
-            "Baptised_Mailing_State" : st.session_state.baptised_state_input,
-            "Baptised_Mailing_Country" : st.session_state.baptised_country_input,
-            "Sacraments_Penance" : st.session_state.sacraments_penance_input,
-            "Sacraments_Eucharist" : st.session_state.sacraments_eucharist_input,
-            "Sacraments_Confirmation" : st.session_state.sacraments_confirmation_input
-        }).execute()
+    if st.session_state.baptism_status == "Yes":
+                st.markdown(
+                """
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 32px;'>
+                    Baptism Information
+                </h1>
+                """,
+                unsafe_allow_html=True
+                )
+                        
+                baptised_denomination_col, baptised_age_col, baptised_empty_one = st.columns(3)
+                with baptised_denomination_col:
+                    st.session_state.baptised_denomination_input = st.text_input("In what denomination were you baptized?")
+                with baptised_age_col:
+                    st.session_state.baptised_age_input = st.number_input("Approximate age when you were baptized:", min_value=0, value=0)
+                with baptised_empty_one:
+                    st.empty()
+
+                baptised_location_col, baptised_address_col = st.columns([1, 2])
+                with baptised_location_col:
+                    st.session_state.baptised_location_input = st.text_input("Place of Baptism (Name of church)")
+                with baptised_address_col:
+                    st.session_state.baptised_address_input = st.text_input("Mailing Address, if known")
+
+                baptised_city_col, baptised_state_col, baptised_country_col = st.columns(3)
+                with baptised_city_col:
+                    st.session_state.baptised_city_input = st.text_input("City")
+                with baptised_state_col:
+                    st.session_state.baptised_state_input = st.text_input("State")
+                with baptised_country_col:
+                    st.session_state.baptised_country_input = st.text_input("Country (if not USA)")
+
+                st.write("If you were baptized as a Catholic, check those sacraments you have already received:")
+                sacraments_penance_col, sacraments_eucharist_col, sacraments_confirmation_col = st.columns(3)
+                with sacraments_penance_col:
+                    st.session_state.sacraments_penance_input = st.checkbox("Penance (Confession)")
+                with sacraments_eucharist_col:
+                    st.session_state.sacraments_eucharist_input = st.checkbox("Eucharist (First Communion)")
+                with sacraments_confirmation_col:
+                    st.session_state.sacraments_confirmation_input = st.checkbox("Confirmation")
+
+    if st.button("Submit"):
+
+        missing_fields = []
+        if not st.session_state.first_name_input:
+            missing_fields.append("First Name")
+        if not st.session_state.last_name_input:
+            missing_fields.append("Last Name")
+        if not st.session_state.dob_input:
+            missing_fields.append("Date of Birth")
+        if not st.session_state.mailing_address_input:
+            missing_fields.append("Mailing Address")
+        if not st.session_state.city_input:
+            missing_fields.append("City")
+        if not st.session_state.state_input:
+            missing_fields.append("State")
+        if not st.session_state.email_input:
+            missing_fields.append("E-Mail Address")
+        if not st.session_state.phone_day_input and not st.session_state.phone_eve_input and not st.session_state.cell_phone_col:
+            missing_fields.append("Phone Number")
+        if not st.session_state.email_input:
+            missing_fields.append("Email Address")
+        if st.session_state.marriage_status == "Engaged":
+            if not st.session_state.fiance_name_input:                    
+                missing_fields.append("Enter Fiance's Name")
+        if st.session_state.marriage_status == "Married":
+            if not st.session_state.spouse_name_input:                    
+                missing_fields.append("Enter Spouse's Name")
+        if st.session_state.baptism_status == "Yes":
+            if not st.session_state.baptised_denomination_input:
+                missing_fields.append("Please Enter Baptism Denomination")
+            if not st.session_state.baptised_age_input:
+                missing_fields.append("Please enter approximate age of baptism")
+            if not st.session_state.baptised_location_input:
+                missing_fields.append("Please enter church name of baptism")
+            if not st.session_state.baptised_city_input:
+                missing_fields.append("Please enter church state of baptism")
+        if missing_fields:
+            st.write("Missing fields:")
+            for field in missing_fields:
+                st.write(f"• {field}")
+        else:
+            try:
+                response = supabase.table("Candidates").insert({
+                "first_name" : st.session_state.first_name_input,
+                "middle_name" : st.session_state.middle_name_input,
+                "last_name" : st.session_state.last_name_input,
+                "maiden_name" : st.session_state.maiden_name_input,
+                "dob" : str(st.session_state.dob_input),
+                "religion" : st.session_state.religion_input,
+                "mailing_address" : st.session_state.mailing_address_input,
+                "app_number" : st.session_state.app_number_input,
+                "city" : st.session_state.city_input,
+                "state" : st.session_state.state_input,
+                "country" : st.session_state.country_input,
+                "phone_day" : st.session_state.phone_day_input,
+                "phone_evening" : st.session_state.phone_eve_input,
+                "cell_phone" : st.session_state.cell_phone_col,
+                "email" : st.session_state.email_input,
+                "other" : st.session_state.other_input,
+                "occupation" : st.session_state.occupation_input,
+                "relationship_type_one" : st.session_state.relationship_input_1,
+                "relationship_name_one" : st.session_state.name_input_1,
+                "relationship_age_one" : st.session_state.age_input_1,
+                "relationship_type_two" : st.session_state.relationship_input_2,
+                "relationship_name_two" : st.session_state.name_input_2,
+                "relationship_age_two" : st.session_state.age_input_2,
+                "relationship_type_three" : st.session_state.relationship_input_3,
+                "relationship_name_three" : st.session_state.name_input_3,
+                "relationship_age_three" : st.session_state.age_input_3,
+                "relationship_type_four" : st.session_state.relationship_input_4,
+                "relationship_name_four" : st.session_state.name_input_4,
+                "relationship_age_four" : st.session_state.age_input4,
+                "marriage_status" : st.session_state.marriage_status,
+                "baptism_status" : st.session_state.baptism_status,
+                "fiance_name" : st.session_state.fiance_name_input,
+                "fiance_religion" : st.session_state.fiance_religion_input,
+                "fiance_my_previous_mariage" : st.session_state.fiance_my_previous_marriage_status,
+                "fiance_fiance_previous_mariage" : st.session_state.fiance_fiances_previous_marriage_status,
+                "spouse_name" : st.session_state.spouse_name_input,
+                "spouse_baptised_catholic" : st.session_state.spouse_baptised_catholic_input,
+                "spouse_witnessed_by_ordination" : st.session_state.spouse_witnessed_by_ordination_input,
+                "spouse_dispensation_for_ordination" : st.session_state.spouse_dispensation_for_ordination_input,
+                "spouse_religion" : st.session_state.spouse_religion_input,
+                "spouse_my_previous_marriage_status" : st.session_state.spouse_my_previous_marriage_status,
+                "spouse_spouses_previous_marriage_status" : st.session_state.spouse_spouses_previous_marriage_status,
+                "baptised_denomination" : st.session_state.baptised_denomination_input,
+                "baptised_age" : st.session_state.baptised_age_input,
+                "baptised_location" : st.session_state.baptised_location_input,
+                "baptised_address" : st.session_state.baptised_address_input,
+                "baptised_city" : st.session_state.baptised_city_input,
+                "baptised_state" : st.session_state.baptised_state_input,
+                "baptised_country" : st.session_state.baptised_country_input,
+                "sacraments_penance" : st.session_state.sacraments_penance_input,
+                "sacraments_eucharist" : st.session_state.sacraments_eucharist_input,
+                "sacraments_confirmation" : st.session_state.sacraments_confirmation_input,
+                "my_first_former_spouse_first_name" : st.session_state.my_first_former_spouse_first_name_input,
+                "my_first_former_spouse_middle_name" : st.session_state.my_first_former_spouse_middle_name_input,
+                "my_first_former_spouse_last_name" : st.session_state.my_first_former_spouse_last_name_input,
+                "my_first_former_spouse_date_of_marriage" : str(st.session_state.my_first_former_spouse_date_of_marriage_input),
+                "my_first_former_spouse_annulment" : st.session_state.my_first_former_spouse_annulment_input,
+                "my_first_former_spouse_annulment_petition_" : st.session_state.my_first_former_spouse_annulment_petition_status,
+                "my_first_former_spouse_annulment_case_nbr" : st.session_state.my_first_former_spouse_annulment_case_nbr_input,
+                "my_first_former_spouse_annulment_case_date" : str(st.session_state.my_first_former_spouse_annulment_case_date_input),
+                "my_first_former_spouse_annulment_diocese_city" : st.session_state.my_first_former_spouse_annulment_diocese_city_input,
+                "my_first_former_spouse_annulment_diocese_state" : st.session_state.my_first_former_spouse_annulment_diocese_state_input,
+                "my_first_former_spouse_annulment_diocese_country" : st.session_state.my_first_former_spouse_annulment_diocese_country_input,
+                "my_first_former_spouse_annulment_nullity_verification" : st.session_state.my_first_former_spouse_annulment_nullity_verification_input,
+                "my_first_former_spouse_annulment_nullity_date" : str(st.session_state.my_first_former_spouse_annulment_nullity_date_input),
+                "my_second_former_spouse_first_name" : st.session_state.my_second_former_spouse_first_name_input,
+                "my_second_former_spouse_middle_name" : st.session_state.my_second_former_spouse_middle_name_input,
+                "my_second_former_spouse_last_name" : st.session_state.my_second_former_spouse_last_name_input,
+                "my_second_former_spouse_date_of_marriage" : str(st.session_state.my_second_former_spouse_date_of_marriage_input),
+                "my_second_former_spouse_annulment" : st.session_state.my_second_former_spouse_annulment_input,
+                "my_second_former_spouse_annulment_petition_" : st.session_state.my_second_former_spouse_annulment_petition_status,
+                "my_second_former_spouse_annulment_case_nbr" : st.session_state.my_second_former_spouse_annulment_case_nbr_input,
+                "my_second_former_spouse_annulment_case_date" : str(st.session_state.my_second_former_spouse_annulment_case_date_input),
+                "my_second_former_spouse_annulment_diocese_city" : st.session_state.my_second_former_spouse_annulment_diocese_city_input,
+                "my_second_former_spouse_annulment_diocese_state" : st.session_state.my_second_former_spouse_annulment_diocese_state_input,
+                "my_second_former_spouse_annulment_diocese_country" : st.session_state.my_second_former_spouse_annulment_diocese_country_input,
+                "my_second_former_spouse_annulment_nullity_verification" : st.session_state.my_second_former_spouse_annulment_nullity_verification_input,
+                "my_second_former_spouse_annulment_nullity_date" : str(st.session_state.my_second_former_spouse_annulment_nullity_date_input),
+                "my_third_former_spouse_first_name" : st.session_state.my_third_former_spouse_first_name_input,
+                "my_third_former_spouse_middle_name" : st.session_state.my_third_former_spouse_middle_name_input,
+                "my_third_former_spouse_last_name" : st.session_state.my_third_former_spouse_last_name_input,
+                "my_third_former_spouse_date_of_marriage" : str(st.session_state.my_third_former_spouse_date_of_marriage_input),
+                "my_third_former_spouse_annulment" : st.session_state.my_third_former_spouse_annulment_input,
+                "my_third_former_spouse_annulment_petition_" : st.session_state.my_third_former_spouse_annulment_petition_status,
+                "my_third_former_spouse_annulment_case_nbr" : st.session_state.my_third_former_spouse_annulment_case_nbr_input,
+                "my_third_former_spouse_annulment_case_date" : str(st.session_state.my_third_former_spouse_annulment_case_date_input),
+                "my_third_former_spouse_annulment_diocese_city" : st.session_state.my_third_former_spouse_annulment_diocese_city_input,
+                "my_third_former_spouse_annulment_diocese_state" : st.session_state.my_third_former_spouse_annulment_diocese_state_input,
+                "my_third_former_spouse_annulment_diocese_country" : st.session_state.my_third_former_spouse_annulment_diocese_country_input,
+                "my_third_former_spouse_annulment_nullity_verification" : st.session_state.my_third_former_spouse_annulment_nullity_verification_input,
+                "my_third_former_spouse_annulment_nullity_date" : str(st.session_state.my_third_former_spouse_annulment_nullity_date_input),
+                "so_first_former_spouse_first_name" : st.session_state.so_first_former_spouse_first_name_input,
+                "so_first_former_spouse_middle_name" : st.session_state.so_first_former_spouse_middle_name_input,
+                "so_first_former_spouse_last_name" : st.session_state.so_first_former_spouse_last_name_input,
+                "so_first_former_spouse_date_of_marriage" : str(st.session_state.so_first_former_spouse_date_of_marriage_input),
+                "so_first_former_spouse_annulment" : st.session_state.so_first_former_spouse_annulment_input,
+                "so_first_former_spouse_annulment_petition_" : st.session_state.so_first_former_spouse_annulment_petition_status,
+                "so_first_former_spouse_annulment_case_nbr" : st.session_state.so_first_former_spouse_annulment_case_nbr_input,
+                "so_first_former_spouse_annulment_case_date" : str(st.session_state.so_first_former_spouse_annulment_case_date_input),
+                "so_first_former_spouse_annulment_diocese_city" : st.session_state.so_first_former_spouse_annulment_diocese_city_input,
+                "so_first_former_spouse_annulment_diocese_state" : st.session_state.so_first_former_spouse_annulment_diocese_state_input,
+                "so_first_former_spouse_annulment_diocese_country" : st.session_state.so_first_former_spouse_annulment_diocese_country_input,
+                "so_first_former_spouse_annulment_nullity_verification" : st.session_state.so_first_former_spouse_annulment_nullity_verification_input,
+                "so_first_former_spouse_annulment_nullity_date" : str(st.session_state.so_first_former_spouse_annulment_nullity_date_input),
+                "so_second_former_spouse_first_name" : st.session_state.so_second_former_spouse_first_name_input,
+                "so_second_former_spouse_middle_name" : st.session_state.so_second_former_spouse_middle_name_input,
+                "so_second_former_spouse_last_name" : st.session_state.so_second_former_spouse_last_name_input,
+                "so_second_former_spouse_date_of_marriage" : str(st.session_state.so_second_former_spouse_date_of_marriage_input),
+                "so_second_former_spouse_annulment" : st.session_state.so_second_former_spouse_annulment_input,
+                "so_second_former_spouse_annulment_petition_" : st.session_state.so_second_former_spouse_annulment_petition_status,
+                "so_second_former_spouse_annulment_case_nbr" : st.session_state.so_second_former_spouse_annulment_case_nbr_input,
+                "so_second_former_spouse_annulment_case_date" : str(st.session_state.so_second_former_spouse_annulment_case_date_input),
+                "so_second_former_spouse_annulment_diocese_city" : st.session_state.so_second_former_spouse_annulment_diocese_city_input,
+                "so_second_former_spouse_annulment_diocese_state" : st.session_state.so_second_former_spouse_annulment_diocese_state_input,
+                "so_second_former_spouse_annulment_diocese_country" : st.session_state.so_second_former_spouse_annulment_diocese_country_input,
+                "so_second_former_spouse_annulment_nullity_verification" : st.session_state.so_second_former_spouse_annulment_nullity_verification_input,
+                "so_second_former_spouse_annulment_nullity_date" : str(st.session_state.so_second_former_spouse_annulment_nullity_date_input),
+                "so_third_former_spouse_first_name" : st.session_state.so_third_former_spouse_first_name_input,
+                "so_third_former_spouse_middle_name" : st.session_state.so_third_former_spouse_middle_name_input,
+                "so_third_former_spouse_last_name" : st.session_state.so_third_former_spouse_last_name_input,
+                "so_third_former_spouse_date_of_marriage" : str(st.session_state.so_third_former_spouse_date_of_marriage_input),
+                "so_third_former_spouse_annulment" : st.session_state.so_third_former_spouse_annulment_input,
+                "so_third_former_spouse_annulment_petition_" : st.session_state.so_third_former_spouse_annulment_petition_status,
+                "so_third_former_spouse_annulment_case_nbr" : st.session_state.so_third_former_spouse_annulment_case_nbr_input,
+                "so_third_former_spouse_annulment_case_date" : str(st.session_state.so_third_former_spouse_annulment_case_date_input),
+                "so_third_former_spouse_annulment_diocese_city" : st.session_state.so_third_former_spouse_annulment_diocese_city_input,
+                "so_third_former_spouse_annulment_diocese_state" : st.session_state.so_third_former_spouse_annulment_diocese_state_input,
+                "so_third_former_spouse_annulment_diocese_country" : st.session_state.so_third_former_spouse_annulment_diocese_country_input,
+                "so_third_former_spouse_annulment_nullity_verification" : st.session_state.so_third_former_spouse_annulment_nullity_verification_input,
+                "so_third_former_spouse_annulment_nullity_date" : str(st.session_state.so_third_former_spouse_annulment_nullity_date_input)
+                }).execute()
+
+                st.success("Candidate information submitted successfully!")
+                st.session_state.current_page = "Home"
+            except Exception as e:
+                st.error(f"An error occurred while submitting the data: {e}")
+            # %%
