@@ -333,7 +333,7 @@ if st.session_state.current_page == "Home":
     
     first_name_col, middle_name_col, last_name_col = st.columns(3)
     with first_name_col:
-        st.session_state.first_name_input = st.text_input("Fist Name:", st.session_state.first_name_input)
+        st.session_state.first_name_input = st.text_input("First Name:", st.session_state.first_name_input)
     with middle_name_col:
         st.session_state.middle_name_input = st.text_input("Middle Name", st.session_state.middle_name_input)
     with last_name_col:
@@ -404,6 +404,8 @@ if st.session_state.current_page == "Home":
         st.empty()
     with second_empty_col:
         st.empty()
+
+    st.warning("If your info was autofilled, please confirm by clicking or typing into each field.")
 
     ############################
     #--Family Information--#
@@ -630,7 +632,7 @@ if st.session_state.current_page == "Home":
     elif st.session_state.marriage_status == "Engaged":
         st.markdown(
                 """
-                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px; margin-bottom: -100px;'>
+                <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 22px;'>
                     Fiancé(e) Previous Marriage Information
                 </h1>
                 """,
@@ -948,7 +950,7 @@ if st.session_state.current_page == "Home":
                 """
 
                 send_html_email(recipient, subject, html_body)
-                
+
             except Exception as e:
                 st.write(f"An error occurred while preparing the email: {e}")
 # %%
