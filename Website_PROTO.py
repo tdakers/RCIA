@@ -1,12 +1,37 @@
-#%%
 from supabase import create_client, Client
 import streamlit as st
 import streamlit.components.v1 as components
 import datetime
-#%%
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 url = "https://dptslvjsbhmxposqarwj.supabase.co"
 key = st.secrets["api"]["key"]
+from_email = st.secrets["api"]["from_email"]
+from_password = st.secrets["api"]["email_app_password"]
 supabase: Client = create_client(url, key)
+
+def send_html_email(to_email, subject, html_content):
+    msg = MIMEMultipart("alternative")
+    msg["From"] = from_email
+    msg["To"] = to_email
+    msg["Subject"] = subject
+
+    # Attach HTML version
+    html_part = MIMEText(html_content, "html")
+    msg.attach(html_part)
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(from_email, from_password)
+            server.sendmail(from_email, to_email, msg.as_string())
+        return True
+    except Exception as e:
+        st.error(f"Failed to send email: {e}")
+        return False
+
+
 
 def former_spouse_form(prefix: str, title: str, annulment_options: list):
     st.write(title)
@@ -902,4 +927,18 @@ if st.session_state.current_page == "Home":
                 st.session_state.current_page = "Home"
             except Exception as e:
                 st.error(f"An error occurred while submitting the data: {e}")
-            # %%
+
+            try:
+                recipient = "tdakers0113@gmail.com"
+                subject = "Fancy HTML Email"
+                html_body = st.text_area("HTML Body", value="""
+                <h2 style='color:blue;'>Hello from Streamlit!</h2>
+                <p>This is an <b>HTML-formatted</b> email sent using <i>Python</i>.</p>
+                """, height=200)
+
+                success = send_html_email(recipient, subject, html_body)
+                if success:
+                    st.success("HTML email sent successfully!")
+            except Exception as e:
+                st.write(f"An error occurred while preparing the email: {e}")
+# %%
