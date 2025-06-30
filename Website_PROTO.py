@@ -10,6 +10,7 @@ url = "https://dptslvjsbhmxposqarwj.supabase.co"
 key = st.secrets["api"]["key"]
 from_email = st.secrets["api"]["from_email"]
 from_password = st.secrets["api"]["email_app_password"]
+recipient = st.secrets["api"]["recipient_email"]
 supabase: Client = create_client(url, key)
 
 def send_html_email(to_email, subject, html_content):
@@ -929,7 +930,6 @@ if st.session_state.current_page == "Home":
                 st.error(f"An error occurred while submitting the data: {e}")
 
             try:
-                recipient = "tdakers0113@gmail.com"
                 subject = "New RCIA Submission!"
                 contact_phone = ''
                 if st.session_state.phone_day_input != None:
@@ -942,7 +942,7 @@ if st.session_state.current_page == "Home":
                 <h2>New RCIA Submission!</h2>
                 <p>Team,<br>
                 <b>{st.session_state.first_name_input} {st.session_state.last_name_input} </b> has successfully submitted an application for the RCIA course<br>
-                {contact_phone} <br>
+                {contact_phone}
                 Email: {st.session_state.email_input} <br>
                 </p>
                 """
