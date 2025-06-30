@@ -930,11 +930,22 @@ if st.session_state.current_page == "Home":
 
             try:
                 recipient = "tdakers0113@gmail.com"
-                subject = "Fancy HTML Email"
-                html_body = st.text_area("HTML Body", value="""
-                <h2 style='color:blue;'>Hello from Streamlit!</h2>
-                <p>This is an <b>HTML-formatted</b> email sent using <i>Python</i>.</p>
-                """, height=200)
+                subject = "New RCIA Submission!"
+                contact_phone = ''
+                if st.session_state.phone_day_input != None:
+                    contact_phone += f"Day: {st.session_state.phone_day_input}<br>"
+                if st.session_state.phone_eve_input != None:
+                    contact_phone += f"Evening: {st.session_state.phone_eve_input}<br>"
+                if st.session_state.cell_phone_col != None:
+                    contact_phone += f"Cell: {st.session_state.cell_phone_col}<br>"
+                html_body = f"""
+                <h2>New RCIA Submission!</h2>
+                <p>Team,<br>
+                <b>{st.session_state.first_name_input} {st.session_state.last_name_input} </b> has successfully submitted an application for the RCIA course<br>
+                {contact_phone} <br>
+                Email: {st.session_state.email_input} <br>
+                </p>
+                """
 
                 success = send_html_email(recipient, subject, html_body)
                 if success:
