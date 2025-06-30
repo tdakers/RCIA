@@ -133,7 +133,7 @@ previous_marriage_annulment_options = ["Not, to my knowledge", "Yes", "An annulm
 previous_marriage_annulment_status = ["No", "Yes", "I do not know"]
 
 # Centered title using HTML
-st.set_page_config(page_title="My First Website", layout='wide')
+st.set_page_config(page_title="St Matthews RCIA", layout='wide')
 
 # JavaScript to scroll to the top
 scroll_to_top = """
