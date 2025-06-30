@@ -947,9 +947,8 @@ if st.session_state.current_page == "Home":
                 </p>
                 """
 
-                success = send_html_email(recipient, subject, html_body)
-                if success:
-                    st.success("HTML email sent successfully!")
+                send_html_email(recipient, subject, html_body)
+                
             except Exception as e:
                 st.write(f"An error occurred while preparing the email: {e}")
 # %%
