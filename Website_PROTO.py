@@ -309,7 +309,7 @@ st.markdown(
         Inquirer Information Form
     </h1>
     <h2 style='text-align: center; font-family: "Helvetica", sans-serif; font-size: 24px; font-style: italic;'>
-        Diocese of Charlotte
+        St. Matthews of Charlotte
     </h2>
     """,
     unsafe_allow_html=True
@@ -373,7 +373,7 @@ if st.session_state.current_page == "Home":
         st.session_state.mailing_address_input = st.text_input("Mailing Address", st.session_state.mailing_address_input)
 
     with apt_col:
-        st.session_state.app_number_input = st.text_input("App Number", st.session_state.app_number_input)
+        st.session_state.app_number_input = st.text_input("Apt Number", st.session_state.app_number_input)
 
     city_col, state_col, country_col = st.columns(3)
     with city_col:
