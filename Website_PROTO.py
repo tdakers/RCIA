@@ -6,6 +6,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+url = "https://oiwaiptfozfuodsbrlrq.supabase.co"
 key = st.secrets["api"]["key"]
 from_email = st.secrets["api"]["from_email"]
 from_password = st.secrets["api"]["email_app_password"]
