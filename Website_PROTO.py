@@ -6,7 +6,6 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-url = "https://oiwaiptfozfuodsbrlrq.supabase.co"
 key = st.secrets["api"]["key"]
 from_email = st.secrets["api"]["from_email"]
 from_password = st.secrets["api"]["email_app_password"]
@@ -200,7 +199,7 @@ st.session_state.setdefault("spouse_spouses_previous_marriage_status")
 st.session_state.setdefault("spouse_spouses_previous_marriage_index", 0)
 
 st.session_state.setdefault("baptised_denomination_input")
-st.session_state.setdefault("baptised_age_input")
+st.session_state.setdefault("baptised_age_input", -1)
 st.session_state.setdefault("baptised_location_input")
 st.session_state.setdefault("baptised_address_input")
 st.session_state.setdefault("baptised_city_input")
@@ -753,6 +752,8 @@ if st.session_state.current_page == "Home":
 
     if st.button("Submit"):
 
+        st.write(st.session_state.baptised_age_input)
+
         missing_fields = []
         if not st.session_state.first_name_input:
             missing_fields.append("First Name")
@@ -781,7 +782,7 @@ if st.session_state.current_page == "Home":
         if st.session_state.baptism_status == "Yes":
             if not st.session_state.baptised_denomination_input:
                 missing_fields.append("Please Enter Baptism Denomination")
-            if not st.session_state.baptised_age_input:
+            if st.session_state.baptised_age_input < 0:
                 missing_fields.append("Please enter approximate age of baptism")
             if not st.session_state.baptised_location_input:
                 missing_fields.append("Please enter church name of baptism")
