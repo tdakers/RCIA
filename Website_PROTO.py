@@ -11,6 +11,7 @@ key = st.secrets["api"]["key"]
 from_email = st.secrets["api"]["from_email"]
 from_password = st.secrets["api"]["email_app_password"]
 recipient = st.secrets["api"]["recipient_email"]
+
 supabase: Client = create_client(url, key)
 
 def send_html_email(to_email, subject, html_content):
@@ -122,12 +123,12 @@ def family_member_input(family_current_count):
     with col3:
         st.session_state[age_key] = st.number_input(f"Age{indent}", min_value=0)
 
-marriage_options = ["Single", "Engaged", "Married", "Separated", "Divorced", "Widow(er)"]
+marriage_options = ["Single", "Engaged", "Married", "Separated", "Divorced (Not Remarried)", "Widow(er)"]
 baptism_options = ["No", "Yes", "I am not sure"]
 
 previous_marriage_options = ["This is my first marriage", "I have been married before"]
-fiance_previous_marriage_options = ["This is my fiancé(e)’s first marriage", "My fiancé(e) has been married before"]
-spouse_previous_marriage_options = ["This is my spouse’s first marriage", "My spouse has been married before"]
+fiance_previous_marriage_options = ["This is my fiancé(e) first marriage", "My fiancé(e) has been married before"]
+spouse_previous_marriage_options = ["This is my spouse first marriage", "My spouse has been married before"]
 
 previous_marriage_annulment_options = ["Not, to my knowledge", "Yes", "An annulment is currently in process"]
 previous_marriage_annulment_status = ["No", "Yes", "I do not know"]
@@ -302,6 +303,11 @@ st.session_state.setdefault("so_third_former_spouse_annulment_nullity_verificati
 st.session_state.setdefault("so_third_former_spouse_annulment_nullity_date_input", None)
 st.session_state.setdefault("so_third_former_spouse_annulment_additional_marriage_boolean", False)
 
+st.session_state.setdefault("zip_code")
+st.session_state.setdefault("fathers_name_input", None)
+st.session_state.setdefault("mothers_name_input", None)
+st.session_state.setdefault("mothers_maiden_name_input", None)
+
 # Custom font for the centered title
 st.markdown(
     """
@@ -375,11 +381,13 @@ if st.session_state.current_page == "Home":
     with apt_col:
         st.session_state.app_number_input = st.text_input("Apt Number", st.session_state.app_number_input)
 
-    city_col, state_col, country_col = st.columns(3)
+    city_col, state_col, zip_col, country_col = st.columns(4)
     with city_col:
         st.session_state.city_input = st.text_input("City", st.session_state.city_input)
     with state_col:
         st.session_state.state_input = st.text_input("State", st.session_state.state_input)
+    with zip_col:
+            st.session_state.zip_code = st.text_input("Zip Code", st.session_state.zip_code)
     with country_col:
         st.session_state.country_input = st.text_input("Country (If not USA)", st.session_state.country_input)
 
@@ -416,8 +424,25 @@ if st.session_state.current_page == "Home":
             III. Family Information
         </h1>
         <h2 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 18px; font-style: italic; margin-top: 0;'>
-            List the name(s) of any children or other dependents. (e.g. Daughter—Jane; Stepson—John.)
+            Parental Information
         </h2>
+        """,
+        unsafe_allow_html=True
+    )
+
+    fathers_name_col, mothers_name_col, mothers_maiden_name_col = st.columns(3)
+    with fathers_name_col:
+        st.session_state.fathers_name_input = st.text_input("Fathers Name", st.session_state.fathers_name_input)
+    with mothers_name_col:
+        st.session_state.mothers_name_input = st.text_input("Mothers Name", st.session_state.mothers_name_input)
+    with mothers_maiden_name_col:
+        st.session_state.mothers_maiden_name_input = st.text_input("Mothers Maiden Name", st.session_state.mothers_maiden_name_input)
+
+    st.markdown(
+        """
+        <h1 style='text-align: left; font-family: "Helvetica", sans-serif; font-size: 18px; font-style: italic; margin-top: 0;'>
+            List the name(s) of any children or other dependents. (e.g. Daughter—Jane; Stepson—John.)
+        </h1>
         """,
         unsafe_allow_html=True
     )
@@ -662,7 +687,7 @@ if st.session_state.current_page == "Home":
             )
 
         # First spouse
-        former_spouse_form("so_first_former_spouse", "Former Spouse’s Current Name:", previous_marriage_annulment_options)
+        former_spouse_form("so_first_former_spouse", "Former Spouses Current Name:", previous_marriage_annulment_options)
 
         if not st.session_state.so_second_former_spouse_annulment_additional_marriage_boolean:
             if st.button("Add Another Former Spouse  "):
@@ -671,7 +696,7 @@ if st.session_state.current_page == "Home":
 
         if st.session_state.so_second_former_spouse_annulment_additional_marriage_boolean:
             # Second spouse
-            former_spouse_form("so_second_former_spouse", "Second Former Spouse’s Current Name:", previous_marriage_annulment_options)
+            former_spouse_form("so_second_former_spouse", "Second Former Spouses Current Name:", previous_marriage_annulment_options)
 
             if not  st.session_state.so_third_former_spouse_annulment_additional_marriage_boolean:
                 if st.button("Remove previous spouse  "):
@@ -683,7 +708,7 @@ if st.session_state.current_page == "Home":
 
         if st.session_state.so_third_former_spouse_annulment_additional_marriage_boolean:
             # Third spouse
-            former_spouse_form("so_third_former_spouse", "Third Former Spouse’s Current Name:", previous_marriage_annulment_options)
+            former_spouse_form("so_third_former_spouse", "Third Former Spouses Current Name:", previous_marriage_annulment_options)
             if st.button("Remove previous spouse    "):
                 st.session_state.so_third_former_spouse_annulment_additional_marriage_boolean = False
                 st.rerun()
@@ -752,9 +777,6 @@ if st.session_state.current_page == "Home":
                     st.session_state.sacraments_confirmation_input = st.checkbox("Confirmation")
 
     if st.button("Submit"):
-
-        st.write(st.session_state.baptised_age_input)
-
         missing_fields = []
         if not st.session_state.first_name_input:
             missing_fields.append("First Name")
@@ -768,18 +790,22 @@ if st.session_state.current_page == "Home":
             missing_fields.append("City")
         if not st.session_state.state_input:
             missing_fields.append("State")
+        if not st.session_state.zip_code:
+            missing_fields.append("Zip Code")
         if not st.session_state.email_input:
             missing_fields.append("E-Mail Address")
         if not st.session_state.phone_day_input and not st.session_state.phone_eve_input and not st.session_state.cell_phone_col:
             missing_fields.append("Phone Number")
         if not st.session_state.email_input:
             missing_fields.append("Email Address")
+        if not st.session_state.mothers_maiden_name_input:
+            missing_fields.append("Mothers Maiden Name")
         if st.session_state.marriage_status == "Engaged":
             if not st.session_state.fiance_name_input:                    
-                missing_fields.append("Enter Fiance's Name")
+                missing_fields.append("Enter Fiances Name")
         if st.session_state.marriage_status == "Married":
             if not st.session_state.spouse_name_input:                    
-                missing_fields.append("Enter Spouse's Name")
+                missing_fields.append("Enter Spouse Name")
         if st.session_state.baptism_status == "Yes":
             if not st.session_state.baptised_denomination_input:
                 missing_fields.append("Please Enter Baptism Denomination")
@@ -925,7 +951,11 @@ if st.session_state.current_page == "Home":
                 "so_third_former_spouse_annulment_diocese_state" : st.session_state.so_third_former_spouse_annulment_diocese_state_input,
                 "so_third_former_spouse_annulment_diocese_country" : st.session_state.so_third_former_spouse_annulment_diocese_country_input,
                 "so_third_former_spouse_annulment_nullity_verification" : st.session_state.so_third_former_spouse_annulment_nullity_verification_input,
-                "so_third_former_spouse_annulment_nullity_date" : str(st.session_state.so_third_former_spouse_annulment_nullity_date_input)
+                "so_third_former_spouse_annulment_nullity_date" : str(st.session_state.so_third_former_spouse_annulment_nullity_date_input),
+                "zip_code" : st.session_state.zip_code,
+                "fathers_name" : st.session_state.fathers_name_input,
+                "mothers_name" : st.session_state.mothers_name_input,
+                "mothers_maiden_name" : st.session_state.mothers_maiden_name_input
                 }).execute()
 
                 st.success("Candidate information submitted successfully!")
